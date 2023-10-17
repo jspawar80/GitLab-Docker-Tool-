@@ -57,7 +57,7 @@ This interface allows users to view and manage environment variables of running 
 
 1. Clone the repository:
    ```
-   git clone <repository-url>
+   git clone github.com:jspawar80/GitLab-Docker-Tool-.git
    ```
 
 2. Navigate to the cloned directory:
