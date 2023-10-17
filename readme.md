@@ -69,5 +69,16 @@ This interface allows users to view and manage environment variables of running 
 
 4. Access the tools via the configured URLs on your browser.
 
+To deploy the Application
+```
+http://localhost:4000/env
+```
+
+TO edit and update the env
+
+```
+http://localhost:4000/env2
+```
+
 ---
 
