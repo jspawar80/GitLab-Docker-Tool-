@@ -62,7 +62,7 @@ This interface allows users to view and manage environment variables of running 
 
 2. Navigate to the cloned directory:
    ```
-   cd gitlab-docker-tool
+   cd GitLab-Docker-Tool-
    ```
 
 3. Run the necessary services (assuming you have a setup script or instructions specific to your system).
