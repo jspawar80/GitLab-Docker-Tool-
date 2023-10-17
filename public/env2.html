@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Environment Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-12">
+                <h2>Select a running container:</h2>
+                <select class="form-select mb-3" id="containerDropdown">
+                    <!-- Options will be dynamically added here -->
+                </select>
+
+                <h2>Environment Variables:</h2>
+                <textarea class="form-control mb-3" id="envTextarea"></textarea>
+                
+                <button class="btn btn-primary me-2" onclick="fetchEnv()">Fetch Environment Variables</button>
+                <button class="btn btn-success" onclick="updateEnv()">Update Environment Variables</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" tabindex="-1" id="loadingOverlayEnv">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="d-flex align-items-center">
+                        <strong>Loading...</strong>
+                        <div class="spinner-border ms-auto" role="status" aria-hidden="true"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showLoadingEnv() {
+            document.getElementById('loadingOverlayEnv').style.display = 'block';
+        }
+
+        function hideLoadingEnv() {
+            document.getElementById('loadingOverlayEnv').style.display = 'none';
+        }
+
+        function populateContainerDropdown() {
+            const dropdown = document.getElementById('containerDropdown');
+            fetch('/containers')
+                .then(response => response.json())
+                .then(containers => {
+                    // Filter out containers that are not up
+                    const upContainers = containers.filter(container => container.status.startsWith('Up'));
+                    dropdown.innerHTML = ''; // Clear the dropdown
+                    upContainers.forEach(container => {
+                        const option = document.createElement('option');
+                        option.value = container.name;
+                        option.innerText = container.name;
+                        dropdown.appendChild(option);
+                    });
+                });
+        }
+
+        function fetchEnv() {
+            const selectedContainer = document.getElementById('containerDropdown').value;
+            if (!selectedContainer) return;
+            showLoadingEnv();
+            fetch(`/fetch-env`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ repoName: selectedContainer })
+            })
+            .then(response => response.json())
+            .then(envData => {
+                document.getElementById('envTextarea').value = envData.join('\n');
+                hideLoadingEnv();
+            });
+        }
+
+        function updateEnv() {
+            const selectedContainer = document.getElementById('containerDropdown').value;
+            const updatedEnv = document.getElementById('envTextarea').value.split('\n');
+            if (!selectedContainer || !updatedEnv.length) return;
+            showLoadingEnv();
+            fetch(`/update-env`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ repoName: selectedContainer, env: updatedEnv })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Environment variables updated successfully');
+                } else {
+                    alert('Failed to update environment variables');
+                }
+                hideLoadingEnv();
+            });
+        }
+
+        // Populate the dropdown when the page loads
+        window.onload = populateContainerDropdown;
+        setInterval(populateContainerDropdown, 10000);
+    </script>
+</body>
+</html>
